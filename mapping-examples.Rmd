@@ -1,0 +1,135 @@
+---
+title: "NYC-map"
+author: "Jennifer Fowler"
+date: '2023-06-07'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load libraries
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(leaflet))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(mapdeck))
+suppressPackageStartupMessages(library(leaflet.minicharts))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(tigris))
+
+```
+
+
+## NYC Data
+
+```{r}
+#import data - change out the file path below 
+shootings = read.csv("/Users/jennifershelton/Downloads/Repository/NYC/shootings.csv", stringsAsFactors = TRUE)
+```
+
+
+
+```{r}
+#shootings$STATISTICAL_MURDER_FLAG = toString(shootings$STATISTICAL_MURDER_FLAG)
+
+getColor = function(shootings) {
+  sapply(shootings$STATISTICAL_MURDER_FLAG, function(STATISTICAL_MURDER_FLAG) {
+  if(STATISTICAL_MURDER_FLAG == "FALSE") {
+    "orange"
+    } else {
+      "red"
+      } 
+    }
+  )
+}
+```
+
+
+```{r}
+# define icons and other components to use in the map logic
+
+# with this section I was trying to assign red color markers to murders 
+# and orange to survivors but the if statement is not working, all the icons are red
+df=shootings[1:500,]
+icon1 = awesomeIcons(icon = 'flag', iconColor = 'black', library = 'glyphicon',  markerColor = getColor(df))
+
+icon2 = awesomeIcons(icon = 'map-marker', iconColor = 'black', library = 'glyphicon', markerColor = "lightblue")
+
+```
+
+
+```{r}
+mymap = leaflet(data=shootings[1:500,]) %>%
+      #add base layer of map    
+      addTiles() %>%
+  
+  addAwesomeMarkers(data = shootings, group = "Shooting Events", icon = icon1,
+                    popup = paste("Location Description:", shootings$LOCATION_DESC, "<br>",
+                                  "Date of Incident:", shootings$OCCUR_DATE, layerId = 1),
+                                  clusterOptions = markerClusterOptions(), 
+                    clusterId = "Shooting Events") %>%
+  
+  addLayersControl(
+        overlayGroups = c("Shooting Events"),
+        options = layersControlOptions(collapsed = FALSE)) %>%
+  
+  hideGroup("Shooting Events") #hides the markers on initialization
+
+#display map
+mymap
+
+```
+
+  
+## Squirrel Dataset
+
+```{r}
+squirrel = read.csv("/Users/jennifershelton/Downloads/Repository/Squirrel Census/squirrel-data.csv", header = TRUE)
+```
+
+```{r}
+squirrelmap = leaflet(data=squirrel) %>%
+      #add base layer of map    
+      addTiles() %>%
+  addCircleMarkers(radius=2, lng = squirrel$Squirrel.Longitude...DD.DDDDDD., lat = squirrel$Squirrel.Latitude..DD.DDDDDD.,  group = 'Squirrels', label = "Squirrel ID", popup = as.character(squirrel$Squirrel.ID)) %>%
+  addLayersControl(
+        overlayGroups = c("Squirrels"),
+        options = layersControlOptions(collapsed = FALSE))
+squirrelmap
+```
+
+## Rural Economics Dataset - In progress
+
+```{r}
+#import datasets
+rural_long = read.csv("/Users/jennifershelton/Downloads/Repository/Rural Economy/rural-econ.csv", header = TRUE, stringsAsFactors = TRUE)
+
+```
+
+```{r}
+#spread the rural economics data 
+rural_wide = spread(rural_long, Attribute, Value)
+```
+
+```{r}
+# import shapefiles for states and counties
+stateshapes = states(cb = FALSE, resolution = "500k", year = 2020)
+counties = counties(cb=FALSE, year = 2020)
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+

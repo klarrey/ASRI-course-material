@@ -1,0 +1,268 @@
+---
+title: "ASRI Regression Lab"
+author: "Dr. Weijia Jia"
+date: "2023-06-08"
+output: slidy_presentation
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.dim=c(6,4.5))
+```
+
+## What is regression?
+
+First, let's introduce linear regression with a very simple example.
+
+#### Scatterplot
+
+```{r, echo=TRUE}
+# A simple example with x and y defined below
+# x is called predictor
+# y is called response
+
+x <- c(1, 2, 3, 4, 5)
+y <- c(4.39, 9.18, 12.31, 12.17, 20.53)
+
+# Draw the scatterplot
+plot(x, y)
+```
+
+#### Best-fitted line
+
+* The best-fitted line is the line fits the data the best (using the least squares method). 
+* The *best-fitted line* is also called the *regression line*, or *the least squares regression line*.
+* The equation of the best-fitted line is called **estimated regression equation**.
+* The estimated regression equation is denoted as $\hat{y} = b_0 + b_1 x$. (Recall $y=mx+b$ the slope-intercept form of a linear equation. )
+* $b_0$ is the intercept of the estimated regression equation.
+* $b_1$ is the slope of the estimated regression equation.
+
+```{r, echo=TRUE}
+fit = lm(y~x)
+```
+
+```{r, echo=TRUE}
+# Draw the best-fitted line on the scatterplot
+plot(x,y)
+abline(fit, col="red")
+summary(fit)
+```
+
+For this question, the *estimated regression equation* is $\hat{y} = 1.135 + 3.527 x$. You could find these statistics from the output above or using `coef(fit)`.
+
+```{r, echo=TRUE}
+# Find the coefficient of best-fitted line
+coef(fit)
+```
+
+
+
+
+## Let's summarize the code we've used
+
+```{r, echo=TRUE, eval=FALSE}
+# x is predictor, y is response
+x <- c(1, 2, 3, 4, 5)
+y <- c(4.39, 9.18, 12.31, 12.17, 20.53)
+
+# Draw the scatterplot
+plot(x, y)
+
+# Fit the model
+fit = lm(y~x)
+
+# Add the regression line to the scatterplot
+plot(x,y)
+abline(fit, col="red")
+
+# Find the summary statistics of the model
+summary(fit)
+
+# Find the coefficients of the model
+coef(fit)
+
+# (Additional advanced topic) Examine residual plots
+par(mfrow=c(2,2))
+plot(fit)
+par(mfrow=c(1,1)) # change back to default setting
+
+
+```
+
+
+## Boston Example
+
+The Boston dataset from the **MASS** package in R contains information about various attributes for suburbs in Boston, Massachusetts.
+
+This lab will investigate predicting median house value (medv) using other predictors. 
+
+Let's learn more about the dataset, including variable names and features.
+
+```{r Boston, echo = TRUE}
+library(MASS)
+
+# load the data
+data(Boston)
+
+# get variable names
+names(Boston)
+
+# get info about the data set
+str(Boston)
+
+# examine data
+head(Boston)
+```
+
+
+
+## Fit linear regression model to Boston Data
+
+```{r, echo=TRUE}
+# the formula syntax is model = lm(response~predictor, data = )
+lm.fit=lm(medv~lstat, data = Boston)
+
+# inspect the linear model info 
+summary(lm.fit)
+
+# Find the coefficient
+coef(lm.fit)
+
+# Draw the best-fitted line to the scatterplot
+attach(Boston)
+plot(lstat,medv)
+abline(lm.fit, col="red", lwd=3)
+
+# split screen and show multiple residual plots of lm.fit
+par(mfrow=c(2,2))
+plot(lm.fit)
+par(mfrow=c(1,1))
+```
+
+Ideally, the residual plot will show no fitted discernible pattern. The presence of a pattern may indicate a problem with some aspect of the linear model.
+
+## Something to check about the output
+
+- The estimated regression equation
+
+$$\hat{y} = b_0 + b_1 x = 34.55 - 0.95 x$$
+
+
+- The $p$-value for the predictor
+
+From the output, the $p$-value is $<2e-16$ (essentially 0), which is less than 0.05. Therefore, `lstat` is an important predictor for `medv`.
+
+- The r-squared (also called the coefficient of determination). 
+
+-- r-squared is the proportion of variation in the response variable that is explained by the predictor variable in the model. 
+
+-- The closer the r-squared value is to 1, the better the fit.
+
+-- An r-squared value of 0 indicates that the regression line does not fit the data at all, while an r-squared value of 1 indicates a perfect fit.
+
+
+From the output, the r-squared value is $54.41\%$. This means there are $54.41\%$ of of the variability observed in the response variable `medv` is explained by the linear relationship between `medv` and `lstat`.
+
+
+## Fit multiple linear regression
+
+* With only one predictor, the regression is called simple linear regression
+
+* With more than one predictors, the regression is multiple linear regression.
+
+* No matter simple linear regression or multiple linear regression, there are always only **one** response variable. 
+
+```{r, echo=TRUE}
+# the formula syntax is model = lm(response~predictor1 + predictor2 + ... + predictorp, data = )
+boston.mlr=lm(medv~lstat + rm + dis + ptratio + chas, data = Boston)
+
+# inspect the linear model info 
+summary(boston.mlr)
+
+# Find the coefficient
+coef(boston.mlr)
+
+
+# split screen and show multiple residual plots of lm.fit
+par(mfrow=c(2,2))
+plot(boston.mlr)
+par(mfrow=c(1,1))
+```
+
+From the output, the r-squared value is $69.66\%$. This means there are $69.66\%$ of of the variability observed in the response variable `medv` is explained by this multiple linear regression model.
+
+
+## Fit linear regression model to diabetes data
+
+Please read in the diabetes data into R. Name the data frame as `diab`. Then fit the regression model using
+
+* predictor variable -- age
+* response variable -- bmi
+
+```{r}
+diab <- read.csv("diabetes-data.csv") 
+```
+
+
+```{r, echo=TRUE}
+# the formula syntax is model = lm(response~predictor, data = )
+diab.lmfit=lm(bmi~age, data = diab)
+
+# inspect the linear model info 
+summary(diab.lmfit)
+
+# Find the coefficient
+coef(diab.lmfit)
+
+# Draw the best-fitted line to the scatterplot
+attach(diab)
+plot(age,bmi)
+abline(diab.lmfit, col="red", lwd=3)
+
+# split screen and show multiple residual plots of lm.fit
+par(mfrow=c(2,2))
+plot(diab.lmfit)
+par(mfrow=c(1,1)) 
+```
+
+
+
+## Introduce Logistic Regression for diabetes data
+
+The major objective of the diabetes data is to predict diabetes in patients based on their medical history and demographic information.
+
+In this case, the ordinary linear regression method doesn't work any longer. Why?
+
+Answer: The response variable is not continuous variable. The response variable is categorical (0-- no diabetes, 1 -- with diabetes).
+
+Therefore, we need to use logistic regression instead. 
+
+#### Fit the logistic regression using glm() function
+
+```{r, echo=TRUE}
+# the formula syntax of logistic regression is model = glm(response~predictors, data = , family=binomial)
+
+diab.glm = glm(diabetes~gender + age + hypertension + heart_disease + smoking_history + bmi + HbA1c_level + blood_glucose_level, data=diab, family=binomial)
+summary(diab.glm)
+
+coef(diab.glm)
+
+diab.prob=predict(diab.glm,type="response")
+diab.prob[1:10]
+
+diab.pred=rep("0",nrow(diab))
+diab.pred[diab.prob>0.5]="1"
+
+# small confusion matrix
+table(diab.pred, diab$diabetes)
+
+# 5352 true positives, 90681 true negatives
+(5352+90681)/100000
+
+# Accuracy is 96.033%
+
+mean(diab.pred==diab$diabetes)
+
+
+```
