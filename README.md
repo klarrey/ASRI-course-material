@@ -1,2 +1,2 @@
 # ASRI-course-material
-ASRI summer coding materials
+ASRI summer coding materials in python
